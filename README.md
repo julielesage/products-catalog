@@ -11,6 +11,6 @@ npm install
 ### Presentation
 
 products catalog project :  
-5 models : product, category, deprtment, user, review.  
+5 models : product, category, department, user, review.  
 CRUD method : Create, Read, Update, Delete.  
 techno : express, node.js, mongoose

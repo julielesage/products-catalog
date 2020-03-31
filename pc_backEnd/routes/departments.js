@@ -62,7 +62,7 @@ router.put("/department/:id/update", async (req, res) => {
     else if (!req.fields.title) res.json({ message: "missing title" });
     else {
       const departmentToUpdate = await Department.findById(req.params.id);
-      departmentToUpdate.title = req.params.title;
+      departmentToUpdate.title = req.fields.title;
       await departmentToUpdate.save();
       const result = await Department.findById(req.params.id);
       res.status(200).json(result);
@@ -71,16 +71,24 @@ router.put("/department/:id/update", async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
 /* cruD --> Delete one */
-// router.delete("/department/:id/delete", (req, res) => {
-//   try {
-//     if (!req.params.id) res.json({ error : "missing id"});
-//     else {
-// supprimer tout ce qu'il y a dedans (boucles et id ?)
-//     }
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
+router.delete("/department/:id/delete", async (req, res) => {
+  try {
+    if (!req.params.id) res.json({ error: "missing id" });
+    else {
+      const categories = await Category.find({ department: req.params.id });
+      categories.forEach(async category => {
+        await Product.remove({ category: category._id });
+      });
+      await Category.remove({ department: req.params.id });
+      const departmentToDelete = await Department.findById(req.params.id);
+      await departmentToDelete.remove();
+      res.send("department and all deleted");
+    }
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 module.exports = router;

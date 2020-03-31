@@ -50,11 +50,24 @@ const createFilters = req => {
 router.get(`/products/with-count`, async (req, res) => {
   try {
     const filters = createFilters(req);
-    const search = await Product.find(filters).populate("category");
+    const search = await Product.find(filters)
+      .populate("category")
+      .populate("reviews");
     if (req.query.sort === "price.asc") {
       search.sort({ price: 1 });
     } else if (req.query.sort === "price-desc") {
       search.sort({ price: -1 });
+    }
+    if (req.query.sort === "rating.asc") {
+      search.sort({ averageRating: 1 });
+    } else if (req.query.sort === "rating-desc") {
+      search.sort({ averageRating: -1 });
+    }
+    //pagination
+    if (req.query.page) {
+      const limit = 3;
+      const page = req.query.page;
+      search.limit(limit).skip(limit * (page - 1));
     }
     res.json({
       count: search.length,
@@ -64,23 +77,46 @@ router.get(`/products/with-count`, async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-/* cRud --> Read one */
-router.get(`/product/:id`, async (req, res) => {
-  try {
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+/* cRud --> Read one no need for me moment */
+// router.get(`/product/:id`, async (req, res) => {
+//   try {
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
+
 /* crUd --> Update one */
-router.put(`/product/:id/update`, async (req, res) => {
+
+router.put("/product/:id/update", async (req, res) => {
   try {
+    if (!req.params.id) res.send("missing id");
+    else {
+      const productToUpdate = await Product.findById(req.params.id);
+      if (req.fields.title) productToUpdate.title = req.fields.title;
+      if (req.fields.description)
+        productToUpdate.description = req.fields.description;
+      if (req.fields.price) productToUpdate.price = req.fields.price;
+      if (req.fields.category) productToUpdate.category = req.fields.category;
+      await productToUpdate.save();
+      console.log(productToUpdate);
+      const result = await Product.findById(req.params.id);
+      res.status(200).json(result);
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
+
 /* cruD --> Delete one */
+
 router.delete(`/product/delete`, async (req, res) => {
   try {
+    if (!req.params.id) res.send("missing id");
+    else {
+      const productToDelete = await Product.findById(req.params.id);
+      productToDelete.remove();
+      res.send("product removed");
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

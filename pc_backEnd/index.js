@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const server = express();
 server.use(formidableMiddleware());
 
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect("mongodb://localhost/products-catalog", {
   useCreateIndex: true,
   useFindAndModify: false,
   useNewUrlParser: true,
@@ -19,6 +19,10 @@ const categoriesRoutes = require("./routes/categories");
 server.use(categoriesRoutes);
 const productsRoutes = require("./routes/products");
 server.use(productsRoutes);
+const usersRoutes = require("./routes/users");
+server.use(usersRoutes);
+const reviewsRoutes = require("./routes/reviews");
+server.use(reviewsRoutes);
 
 server.get("/", function(req, res) {
   res.send("welcome to Products Catalog");
